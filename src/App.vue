@@ -7,16 +7,25 @@ import ExampleSection from './components/ExampleSection.vue'
 import MissionsSection from './components/MissionsSection.vue'
 import QuizSection from './components/QuizSection.vue'
 import ResourcesSection from './components/ResourcesSection.vue'
+import TeamSection from './components/TeamSection.vue'
+import { useProgreso } from './composables/useProgreso'
 
 const vistas = [
   { id: 'inicio', label: 'Inicio', c: HeroSection }, { id: 'conceptos', label: 'Conceptos', c: PillarsSection },
   { id: 'ejemplo', label: 'Ejemplo', c: ExampleSection }, { id: 'actividades', label: 'Actividades', c: MissionsSection },
-  { id: 'autoevaluacion', label: 'Autoevaluación', c: QuizSection }, { id: 'recursos', label: 'Recursos', c: ResourcesSection }
+  { id: 'autoevaluacion', label: 'Autoevaluación', c: QuizSection }, { id: 'recursos', label: 'Recursos', c: ResourcesSection },
+  { id: 'integrantes', label: 'Integrantes', c: TeamSection }
 ]
 const n = ref(0)
 const loading = ref(true)
 const actual = computed(() => vistas[n.value])
 const ir = i => (n.value = Math.max(0, Math.min(vistas.length - 1, i)))
+const { progreso } = useProgreso()
+const avance = computed(() => {
+  const conceptos = progreso.conceptos.length
+  const misiones = progreso.misiones.filter(Boolean).length
+  return conceptos + misiones + (progreso.quizRealizado ? 1 : 0)
+})
 let timer
 let buttonAudio
 let backgroundAudio
@@ -81,6 +90,7 @@ onBeforeUnmount(() => {
       <nav aria-label="Secciones del OVA">
         <button v-for="(v, i) in vistas" :key="v.id" :class="{ on: i === n }" :aria-current="i === n ? 'page' : null" v-ripple @click="ir(i)">{{ v.label }}</button>
       </nav>
+      <p class="avance" :title="`Avance: ${avance} puntos`" aria-live="polite"><span>{{ avance }}</span>/9 progreso</p>
     </header>
     <main>
       <Transition name="fade" mode="out-in">
@@ -100,6 +110,8 @@ onBeforeUnmount(() => {
 .nav nav button{font:inherit;font-size:.95rem;color:var(--ink);background:transparent;border:0;border-radius:999px;padding:.35rem .9rem;cursor:pointer;position:relative;overflow:hidden;transition:background .35s,transform .25s var(--rebote)}
 .nav nav button:hover{transform:translateY(-2px) scale(1.06)}
 .nav nav .on{background:rgba(255,255,255,.28);box-shadow:inset 0 1px 1px rgba(255,255,255,.6)}
+.avance{position:absolute;right:1rem;top:.65rem;font-size:.75rem;opacity:.75}
+.avance span{color:var(--sol);font-weight:800}
 main{padding:2.5rem 1.25rem 1rem;min-height:calc(100vh - 120px)}
 .fade-enter-active,.fade-leave-active{transition:opacity .3s ease,transform .3s ease}
 .fade-enter-from{opacity:0;transform:translateY(16px)}
